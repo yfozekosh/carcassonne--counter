@@ -1,0 +1,97 @@
+"use client"
+
+import { useState } from "react"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { ChevronUp, ChevronDown, Save } from "lucide-react"
+import type { Player } from "@/types"
+
+interface AddPlayerFormProps {
+  showAddPlayer: boolean
+  setShowAddPlayer: (show: boolean) => void
+  players: Player[]
+  addPlayer: (name: string, color: "black" | "yellow" | "blue") => void
+}
+
+export default function AddPlayerForm({ showAddPlayer, setShowAddPlayer, players, addPlayer }: AddPlayerFormProps) {
+  const [newPlayerName, setNewPlayerName] = useState("")
+  const [newPlayerColor, setNewPlayerColor] = useState<"black" | "yellow" | "blue">("black")
+
+  const handleAddPlayer = () => {
+    if (players.length >= 3 || !newPlayerName.trim()) return
+    addPlayer(newPlayerName, newPlayerColor)
+    setNewPlayerName("")
+  }
+
+  return (
+    <Card className={`mb-4 sm:mb-8 ${showAddPlayer ? "" : "border-b-0 rounded-b-none"}`}>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex justify-between items-center">
+          <span>Add Player ({players.length}/3)</span>
+          <div className="flex items-center space-x-2">
+            <div className="text-xs sm:text-sm text-gray-500">
+              <Save className="inline-block mr-1 h-3 w-3" /> Auto-saved
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setShowAddPlayer(!showAddPlayer)} className="h-8 w-8 p-0">
+              {showAddPlayer ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      {showAddPlayer && (
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="playerName">Player Name</Label>
+              <Input
+                id="playerName"
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+                placeholder="Enter player name"
+                disabled={players.length >= 3}
+              />
+            </div>
+
+            <div>
+              <Label>Player Color</Label>
+              <RadioGroup
+                value={newPlayerColor}
+                onValueChange={(value) => setNewPlayerColor(value as "black" | "yellow" | "blue")}
+                className="flex space-x-4 mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="black" id="black" />
+                  <Label htmlFor="black" className="flex items-center">
+                    <div className="w-4 h-4 bg-gray-800 rounded-full mr-2"></div>
+                    Black
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yellow" id="yellow" />
+                  <Label htmlFor="yellow" className="flex items-center">
+                    <div className="w-4 h-4 bg-yellow-400 rounded-full mr-2"></div>
+                    Yellow
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="blue" id="blue" />
+                  <Label htmlFor="blue" className="flex items-center">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+                    Blue
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Button onClick={handleAddPlayer} disabled={players.length >= 3 || !newPlayerName.trim()}>
+              Add Player
+            </Button>
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  )
+}
