@@ -1,0 +1,43 @@
+name: Deploy to Server
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Image"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
+          source: "docker-compose.yml"
+          target: "${{ secrets.SERVER_STACK_PATH }}"
+          strip_components: 0
+          overwrite: true
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
+          script: |
+            cd ${{ secrets.SERVER_STACK_PATH }}
+            # Force overwrite of compose.yaml with the new docker-compose.yml
+            mv -f docker-compose.yml compose.yaml
+            docker compose pull
+            docker compose up -d
+            docker image prune -f

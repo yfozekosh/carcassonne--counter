@@ -1,0 +1,42 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set build timestamp
+        run: |
+          echo "BUILD_TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
+
+      - name: Update build info
+        run: |
+          # Create or update the build info file
+          echo "export const BUILD_TIMESTAMP = '${BUILD_TIMESTAMP}';" > config/build-info.js
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: reg.yfozekosh-lab.uk
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: reg.yfozekosh-lab.uk/carc-counter:latest
+          build-args: |
+            BUILD_TIMESTAMP=${{ env.BUILD_TIMESTAMP }}

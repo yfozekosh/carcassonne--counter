@@ -13,6 +13,14 @@ RUN npm install --legacy-peer-deps
 # Build the application
 FROM deps AS builder
 COPY . .
+
+# Set build timestamp from build arg
+ARG BUILD_TIMESTAMP
+ENV BUILD_TIMESTAMP=${BUILD_TIMESTAMP}
+
+# Create or update the build info file
+RUN echo "export const BUILD_TIMESTAMP = '${BUILD_TIMESTAMP}';" > config/build-info.js
+
 RUN npm run build
 
 # Production image

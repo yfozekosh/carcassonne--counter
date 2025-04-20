@@ -11,6 +11,14 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  webpack: (config) => {
+    // This allows importing package.json for version info
+    config.module.rules.push({
+      test: /package\.json$/,
+      type: 'json',
+    });
+    return config;
+  },
 };
 
 export default nextConfig;

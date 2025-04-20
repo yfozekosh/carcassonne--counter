@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  webui:
+    image: reg.yfozekosh-lab.uk/carc-counter:latest
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:5071:8080
+
+networks: {}
