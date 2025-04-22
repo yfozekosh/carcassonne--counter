@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Crown, RefreshCw } from "lucide-react"
 import type { Player } from "@/types"
-import { getColorBgClass } from "@/utils/color-utils"
+// Add import for PLAYER_COLORS at the top of the file
+import { PLAYER_COLORS } from "@/config/environment"
 
 interface GameSummaryProps {
   players: Player[]
@@ -27,7 +28,7 @@ export default function GameSummary({ players, currentPlayerId, resetGame }: Gam
       <CardContent>
         <div className="space-y-4">
           <h3 className="font-semibold">Leaderboard</h3>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
             {players.map((player, index) => (
               <div
                 key={player.id}
@@ -36,7 +37,10 @@ export default function GameSummary({ players, currentPlayerId, resetGame }: Gam
                 }`}
               >
                 <div className="flex items-center">
-                  <div className={`w-4 h-4 ${getColorBgClass(player.color)} rounded-full mr-2`}></div>
+                  <div
+                    className="w-4 h-4 rounded-full mr-2"
+                    style={{ backgroundColor: PLAYER_COLORS[player.color] }}
+                  ></div>
                   <span className="font-medium">
                     {index + 1}. {player.name}
                     {currentPlayerId === player.id && <Crown className="inline-block ml-1 h-3 w-3 text-yellow-600" />}
@@ -49,11 +53,14 @@ export default function GameSummary({ players, currentPlayerId, resetGame }: Gam
 
           <div className="pt-4 border-t">
             <h3 className="font-semibold mb-2">Points Breakdown</h3>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
               {players.map((player) => (
                 <div key={player.id} className="space-y-1">
                   <div className="flex items-center">
-                    <div className={`w-3 h-3 ${getColorBgClass(player.color)} rounded-full mr-2`}></div>
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: PLAYER_COLORS[player.color] }}
+                    ></div>
                     <span className="font-medium">{player.name}</span>
                   </div>
                   <div className="pl-5 text-sm">

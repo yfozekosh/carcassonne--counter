@@ -1,9 +1,15 @@
-import type { Metadata } from 'next'
-import './globals.css'
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import AppLayout from "@/components/layout/app-layout"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: 'Carcassonne counter',
-  description: 'Simple carcassonne points calculator'
+  title: "Carcassonne Points Calculator",
+  description: "Track points for your Carcassonne board game sessions",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -13,7 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={inter.className}>
+        <AppLayout>{children}</AppLayout>
+      </body>
     </html>
   )
 }

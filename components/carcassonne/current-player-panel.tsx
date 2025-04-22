@@ -9,6 +9,8 @@ import { Switch } from "@/components/ui/switch"
 import { PlusCircle, Crown } from "lucide-react"
 import type { Player } from "@/types"
 import { getColorBgClass, getColorClass, getColorBorderClass } from "@/utils/color-utils"
+// Add import for PLAYER_COLORS at the top of the file
+import { PLAYER_COLORS } from "@/config/environment"
 
 interface CurrentPlayerPanelProps {
   currentPlayer: Player | undefined
@@ -61,19 +63,20 @@ export default function CurrentPlayerPanel({
         <div className="flex flex-col space-y-3">
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             {/* Player selection buttons instead of dropdown */}
-            <div className="flex space-x-2 mb-2 sm:mb-0">
+            <div className="flex flex-wrap gap-2 mb-2 sm:mb-0 max-w-[300px]">
               {players.map((player) => (
                 <button
                   key={player.id}
                   onClick={() => handleSelectedPlayerChange(player.id)}
-                  className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
+                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
                     player.id === selectedPlayer?.id
                       ? `${getColorClass(player.color)} border-white ring-2 ring-black`
                       : `bg-white ${getColorBorderClass(player.color)}`
                   }`}
                   title={player.name}
+                  style={{ backgroundColor: player.id === selectedPlayer?.id ? PLAYER_COLORS[player.color] : "white" }}
                 >
-                  {player.id === selectedPlayer?.id && <Crown className="h-5 w-5" />}
+                  {player.id === selectedPlayer?.id && <Crown className="h-4 w-4" />}
                 </button>
               ))}
             </div>

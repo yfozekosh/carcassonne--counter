@@ -7,8 +7,9 @@ import AddPlayerForm from "@/components/carcassonne/add-player-form"
 import CurrentPlayerPanel from "@/components/carcassonne/current-player-panel"
 import PlayerCard from "@/components/carcassonne/player-card"
 import GameSummary from "@/components/carcassonne/game-summary"
-
-const LOCAL_STORAGE_KEY = "carcassonne-points-calculator"
+import { useGamesStore } from "@/store/games-store"
+// Add import for MAX_PLAYERS at the top of the file
+import { MAX_PLAYERS } from "@/config/environment"
 
 export default function CarcassonnePointsCalculator() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -23,64 +24,64 @@ export default function CarcassonnePointsCalculator() {
   const [advanceTurn, setAdvanceTurn] = useState(false) // Disabled by default
   const [isLoaded, setIsLoaded] = useState(false)
 
+  const { currentGameId, updateGameState, updateLastActivity } = useGamesStore()
   const isMobile = useMediaQuery("(max-width: 768px)")
   const globalInputRef = useRef<HTMLInputElement>(null)
 
-  // Load state from local storage on component mount
+  // Load state from game store
   useEffect(() => {
-    try {
-      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY)
-      if (savedState) {
-        const parsedState = JSON.parse(savedState) as GameState
-        setPlayers(parsedState.players)
-        setCurrentPlayerId(parsedState.currentPlayerId)
-        setSelectedPlayerId(parsedState.currentPlayerId)
-        setSelectedMultiplier(parsedState.selectedMultiplier || {})
+    if (!currentGameId) return
 
-        // Initialize pointsToAdd for all players
-        const initialPointsToAdd: Record<string, string> = {}
-        parsedState.players.forEach((player) => {
+    const gameState = useGamesStore.getState().getGameState(currentGameId)
+    if (gameState) {
+      setPlayers(gameState.players || [])
+      setCurrentPlayerId(gameState.currentPlayerId)
+      setSelectedPlayerId(gameState.currentPlayerId)
+      setSelectedMultiplier(gameState.selectedMultiplier || {})
+
+      // Initialize pointsToAdd for all players
+      const initialPointsToAdd: Record<string, string> = {}
+      if (gameState.players) {
+        gameState.players.forEach((player) => {
           initialPointsToAdd[player.id] = ""
           setEditName((prev) => ({ ...prev, [player.id]: player.name }))
         })
-        setPointsToAdd(initialPointsToAdd)
-
-        // Auto-hide Add Player panel when 3 players are added
-        if (parsedState.players.length >= 3) {
-          setShowAddPlayer(false)
-        }
       }
-    } catch (error) {
-      console.error("Error loading game state:", error)
+      setPointsToAdd(initialPointsToAdd)
+
+      // Auto-hide Add Player panel when 3 players are added
+      if (gameState.players && gameState.players.length >= 3) {
+        setShowAddPlayer(false)
+      }
     }
+
     setIsLoaded(true)
-  }, [])
+  }, [currentGameId])
 
-  // Save state to local storage whenever it changes
+  // Save state to game store whenever it changes
   useEffect(() => {
-    if (!isLoaded) return
+    if (!isLoaded || !currentGameId) return
 
-    try {
-      const stateToSave: GameState = {
-        players,
-        currentPlayerId,
-        selectedMultiplier,
-      }
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave))
-    } catch (error) {
-      console.error("Error saving game state:", error)
+    const gameState: GameState = {
+      players,
+      currentPlayerId,
+      selectedMultiplier,
     }
-  }, [players, currentPlayerId, selectedMultiplier, isLoaded])
+
+    updateGameState(currentGameId, gameState)
+    updateLastActivity(currentGameId)
+  }, [players, currentPlayerId, selectedMultiplier, isLoaded, currentGameId, updateGameState, updateLastActivity])
 
   // Auto-hide Add Player panel when 3 players are added
   useEffect(() => {
-    if (players.length >= 3) {
+    if (players.length >= MAX_PLAYERS) {
       setShowAddPlayer(false)
     }
   }, [players.length])
 
-  const addPlayer = (name: string, color: "black" | "yellow" | "blue") => {
-    if (players.length >= 3) return
+  // Update the addPlayer function to accept any color from the environment
+  const addPlayer = (name: string, color: string) => {
+    if (players.length >= MAX_PLAYERS) return
     if (!name.trim()) return
 
     const newPlayer: Player = {
@@ -104,6 +105,7 @@ export default function CarcassonnePointsCalculator() {
     }
   }
 
+  // Update the removePlayer function to show Add Player panel if fewer than MAX_PLAYERS
   const removePlayer = (playerId: string) => {
     // Create a new array without the removed player
     const updatedPlayers = players.filter((player) => player.id !== playerId)
@@ -121,8 +123,8 @@ export default function CarcassonnePointsCalculator() {
       setSelectedPlayerId(currentPlayerId)
     }
 
-    // Show the Add Player panel if we now have fewer than 3 players
-    if (updatedPlayers.length < 3) {
+    // Show the Add Player panel if we now have fewer than MAX_PLAYERS
+    if (updatedPlayers.length < MAX_PLAYERS) {
       setShowAddPlayer(true)
     }
   }

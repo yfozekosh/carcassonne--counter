@@ -10,7 +10,7 @@ export type PointEntry = {
 export type Player = {
   id: string
   name: string
-  color: "black" | "yellow" | "blue"
+  color: string
   points: PointEntry[]
   total: number
 }

@@ -9,6 +9,7 @@ import { PlusCircle, MinusCircle, User, XCircle, Crown, Trash2 } from "lucide-re
 import type { Player, Multiplier } from "@/types"
 import MultiplierCard from "@/components/carcassonne/multiplier-card"
 import { getColorClass } from "@/utils/color-utils"
+import { PLAYER_COLORS } from "@/config/environment"
 
 interface PlayerCardProps {
   player: Player
@@ -55,9 +56,11 @@ export default function PlayerCard({
 }: PlayerCardProps) {
   return (
     <Card
-      className={`${getColorClass(player.color)} border-2 ${
-        currentPlayerId === player.id ? "ring-2 ring-offset-2 ring-yellow-500" : ""
-      }`}
+      className={`border-2 ${currentPlayerId === player.id ? "ring-2 ring-offset-2 ring-yellow-500" : ""}`}
+      style={{
+        backgroundColor: PLAYER_COLORS[player.color],
+        color: getColorClass(player.color).includes("text-white") ? "white" : "black",
+      }}
     >
       <CardHeader className="pb-3">
         <CardTitle className="flex justify-between items-center">
